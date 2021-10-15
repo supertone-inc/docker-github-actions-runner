@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: actions-runner-node
+  namespace: runners
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: actions-runner
+  template:
+    metadata:
+      labels:
+        app: actions-runner
+    spec:
+      volumes:
+      - name: dockersock
+        hostPath:
+          path: /var/run/docker.sock
+      - name: workdir
+        hostPath:
+          path: /tmp/supertone-inc
+      containers:
+      - name: runner
+        image: appleholic/github_self_hosted_runner:node-12
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
+        env:
+        - name: RUNNER_SCOPE
+          value: "org"
+        - name: ORG_NAME
+          value: supertone-inc
+        - name: LABELS
+          value: node,v12
+        - name: RUNNER_TOKEN
+          value: AA4N7OT76U3EBDOYX6MMDYDBNEWIC
+        - name: RUNNER_NAME_PREFIX
+          value: node-runner
+        - name: RUNNER_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: RUNNER_WORKDIR
+          value: /tmp/supertone-inc
+        - name: RUNNER_GROUP
+          value: Default
+        volumeMounts:
+        - name: dockersock
+          mountPath: /var/run/docker.sock
+        - name: workdir
+          mountPath: /tmp/supertone-inc
